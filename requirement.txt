@@ -1,0 +1,138 @@
+---
+
+## 🎯 PROMPT – Database Visualizer React (Supabase-like)
+
+> **Role & Goal**
+> Kamu adalah **senior full-stack engineer & database architect**.
+> Buatkan **aplikasi Database Visualizer berbasis web** menggunakan **React JS + Vite** yang berfungsi untuk **memvisualisasikan, mengedit, dan mengekspor skema database**.
+
+---
+
+### 🔧 Tech Stack Wajib
+
+* Frontend: **React JS + Vite**
+* State Management: **useContext / Zustand / Redux (pilih yang paling efisien)**
+* Visual Graph: **React Flow / D3.js / Cytoscape.js**
+* Parser SQL: **ANTLR / sql-parser / custom parser JS**
+* Styling: **Tailwind CSS**
+* Tidak menggunakan backend (pure frontend / local processing)
+
+---
+
+### 📥 Fitur Import Database
+
+User dapat **mengunggah file database**:
+
+* `.sql`
+* `.json` (schema export)
+* `.db` (SQLite – optional bonus)
+
+Sistem harus:
+
+1. Parsing file SQL
+2. Mendeteksi:
+
+   * Tabel
+   * Kolom
+   * Primary Key
+   * Foreign Key
+   * Tipe data
+   * Relasi antar tabel
+3. Mengonversi hasil parsing ke **schema graph internal (JSON)**
+
+---
+
+### 🧩 Visualisasi Schema
+
+* Tampilkan **tabel sebagai node**
+* Kolom sebagai isi node
+* Relasi (FK → PK) sebagai **edge**
+* Drag & move tabel
+* Zoom & pan
+* Klik tabel → detail editor
+* Gunakan icon dari fontawesome dan jangan menggunakan emoji
+
+Visual harus **mirip Supabase / ERD modern**
+
+---
+
+### ✏️ CRUD Schema (Editor)
+
+User dapat:
+
+* ➕ Tambah tabel baru
+* ✏️ Edit tabel:
+
+  * Nama tabel
+  * Kolom
+  * Tipe data
+  * PK / FK
+  * Nullable
+* ❌ Hapus tabel
+* Realtime update ke visual graph
+
+Semua perubahan harus disimpan dalam **schema state**
+
+---
+
+### 📤 Export Hasil
+
+User bisa memilih output:
+
+1. **SQL File**
+
+   * CREATE TABLE
+   * ALTER TABLE
+   * DROP TABLE (opsional)
+2. **Command Script**
+
+   * SQL siap `EXEC`
+   * Bisa dipilih:
+
+     * MySQL
+     * PostgreSQL
+     * SQLite
+
+Export harus menyesuaikan perubahan schema user
+
+---
+
+### 🗂 Struktur Folder
+
+Buat struktur project rapi, contoh:
+
+```
+src/
+ ├─ components/
+ │   ├─ SchemaCanvas.jsx
+ │   ├─ TableNode.jsx
+ │   ├─ RelationEdge.jsx
+ ├─ parser/
+ │   ├─ sqlParser.js
+ ├─ exporter/
+ │   ├─ mysql.js
+ │   ├─ postgres.js
+ ├─ store/
+ ├─ utils/
+ └─ App.jsx
+```
+
+---
+
+### 📐 Data Model Internal
+
+Gunakan struktur schema seperti:
+
+```json
+{
+  "tables": [
+    {
+      "name": "users",
+      "columns": [
+        { "name": "id", "type": "int", "pk": true },
+        { "name": "role_id", "type": "int", "fk": "roles.id" }
+      ]
+    }
+  ]
+}
+```
