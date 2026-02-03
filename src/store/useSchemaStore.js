@@ -57,6 +57,37 @@ const useSchemaStore = create((set, get) => ({
         });
     },
 
+    // Visualization Settings
+    visualizationSettings: {
+        edgeColor: '#b1b1b7',
+        edgeWidth: 2,
+        cardBgColor: '#ffffff'
+    },
+
+    updateVisualizationSetting: (key, value) => {
+        set((state) => {
+            const newSettings = { ...state.visualizationSettings, [key]: value };
+
+            // If edge settings changed, update existing edges
+            let newEdges = state.edges;
+            if (key === 'edgeColor' || key === 'edgeWidth') {
+                newEdges = state.edges.map(edge => ({
+                    ...edge,
+                    style: {
+                        ...edge.style,
+                        stroke: key === 'edgeColor' ? value : newSettings.edgeColor,
+                        strokeWidth: key === 'edgeWidth' ? value : newSettings.edgeWidth,
+                    }
+                }));
+            }
+
+            return {
+                visualizationSettings: newSettings,
+                edges: newEdges
+            };
+        });
+    },
+
     // Schema Actions
     setSchema: (tables) => {
         // Generate nodes first
@@ -71,6 +102,8 @@ const useSchemaStore = create((set, get) => ({
             width: 250, // Approximation for dagre
             height: 40 + (table.columns.length * 32),
         }));
+
+        const { edgeColor, edgeWidth } = get().visualizationSettings;
 
         // Generate edges
         const edges = [];
@@ -88,7 +121,7 @@ const useSchemaStore = create((set, get) => ({
                             targetHandle: `${targetCol}-target`,
                             type: 'smoothstep',
                             animated: true,
-                            style: { stroke: '#b1b1b7', strokeWidth: 2 },
+                            style: { stroke: edgeColor, strokeWidth: edgeWidth },
                         });
                     }
                 }

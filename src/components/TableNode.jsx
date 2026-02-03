@@ -3,12 +3,18 @@ import { Handle, Position } from 'reactflow';
 import { Key, Fingerprint, GripHorizontal, FileDigit, Type } from 'lucide-react';
 import clsx from 'clsx';
 
+import useSchemaStore from '../store/useSchemaStore';
+
 const TableNode = ({ data, selected }) => {
+    const cardBgColor = useSchemaStore((state) => state.visualizationSettings.cardBgColor);
+
     return (
         <div className={clsx(
-            "min-w-[250px] bg-white rounded-lg border-2 shadow-sm flex flex-col overflow-hidden",
+            "min-w-[250px] rounded-lg border-2 shadow-sm flex flex-col overflow-hidden",
             selected ? "border-blue-500 shadow-md scale-105 transition-transform" : "border-gray-200"
-        )}>
+        )}
+            style={{ backgroundColor: cardBgColor }}
+        >
             {/* Header */}
             <div className="bg-gray-100 p-2 border-b border-gray-200 flex items-center justify-between font-bold text-gray-700 drag-handle">
                 <div className="flex items-center gap-2">
@@ -18,7 +24,7 @@ const TableNode = ({ data, selected }) => {
             </div>
 
             {/* Columns */}
-            <div className="p-2 flex flex-col gap-1 bg-white">
+            <div className="p-2 flex flex-col gap-1">
                 {data.columns.map((col, idx) => (
                     <div key={idx} className="flex items-center justify-between text-sm py-1 border-b border-gray-50 last:border-0 relative group">
                         {/* Left Handle (Target) */}
