@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { applyNodeChanges, applyEdgeChanges } from 'reactflow';
 import dagre from 'dagre';
 
@@ -41,7 +42,7 @@ const getLayoutedElements = (nodes, edges, direction = 'TB') => {
     return { nodes: layoutedNodes, edges };
 };
 
-const useSchemaStore = create((set, get) => ({
+const useSchemaStore = create(persist((set, get) => ({
     nodes: [],
     edges: [],
 
@@ -164,6 +165,13 @@ const useSchemaStore = create((set, get) => ({
             edges: state.edges.filter((e) => e.source !== id && e.target !== id),
         }));
     },
+}), {
+    name: 'schema-storage',
+    partialize: (state) => ({
+        nodes: state.nodes,
+        edges: state.edges,
+        visualizationSettings: state.visualizationSettings,
+    }),
 }));
 
 export default useSchemaStore;
