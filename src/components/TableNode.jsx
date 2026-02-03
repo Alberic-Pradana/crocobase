@@ -13,7 +13,7 @@ const TableNode = ({ data, selected }) => {
             "min-w-[250px] rounded-lg border-2 shadow-sm flex flex-col overflow-hidden",
             selected ? "border-blue-500 shadow-md scale-105 transition-transform" : "border-gray-200"
         )}
-            style={{ backgroundColor: cardBgColor }}
+            style={{ backgroundColor: data.color || cardBgColor }}
         >
             {/* Header */}
             <div className="bg-gray-100 p-2 border-b border-gray-200 flex items-center justify-between font-bold text-gray-700 drag-handle">

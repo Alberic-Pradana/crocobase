@@ -9,18 +9,29 @@ const TableEditor = ({ tableId, onClose }) => {
 
     const [name, setName] = useState('');
     const [columns, setColumns] = useState([]);
+    const [color, setColor] = useState('#ffffff');
+
+    const CARD_COLORS = [
+        { name: 'White', value: '#ffffff' },
+        { name: 'Gray', value: '#f9fafb' }, // gray-50
+        { name: 'Blue', value: '#eff6ff' }, // blue-50
+        { name: 'Green', value: '#f0fdf4' }, // green-50
+        { name: 'Yellow', value: '#fefce8' }, // yellow-50
+        { name: 'Red', value: '#fef2f2' }, // red-50
+    ];
 
     useEffect(() => {
         if (tableNode) {
             setName(tableNode.data.name);
             setColumns(JSON.parse(JSON.stringify(tableNode.data.columns))); // Deep copy
+            setColor(tableNode.data.color || '#ffffff');
         }
     }, [tableNode, tableId]);
 
     if (!tableNode) return null;
 
     const handleSave = () => {
-        updateTable(tableId, { name, columns });
+        updateTable(tableId, { name, columns, color });
         onClose();
     };
 
@@ -75,6 +86,22 @@ const TableEditor = ({ tableId, onClose }) => {
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                         />
+                    </div>
+
+                    {/* Table Color */}
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Card Color</label>
+                        <div className="flex gap-2 flex-wrap">
+                            {CARD_COLORS.map((c) => (
+                                <button
+                                    key={c.name}
+                                    className={`w-8 h-8 rounded-full border border-gray-300 ${color === c.value ? 'ring-2 ring-offset-1 ring-blue-500' : ''}`}
+                                    style={{ backgroundColor: c.value }}
+                                    onClick={() => setColor(c.value)}
+                                    title={c.name}
+                                />
+                            ))}
+                        </div>
                     </div>
 
                     {/* Columns */}
