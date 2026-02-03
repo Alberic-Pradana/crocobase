@@ -2,21 +2,24 @@ import React, { memo } from 'react';
 import { Handle, Position } from 'reactflow';
 import { Key, Fingerprint, GripHorizontal, FileDigit, Type } from 'lucide-react';
 import clsx from 'clsx';
+import { getCardColor } from '../utils/theme';
 
 import useSchemaStore from '../store/useSchemaStore';
 
 const TableNode = ({ data, selected }) => {
-    const cardBgColor = useSchemaStore((state) => state.visualizationSettings.cardBgColor);
+    const { darkMode, cardBgColor } = useSchemaStore((state) => state.visualizationSettings);
+
+    const activeBg = getCardColor(data.color || cardBgColor, darkMode);
 
     return (
         <div className={clsx(
-            "min-w-[250px] rounded-lg border-2 shadow-sm flex flex-col overflow-hidden",
-            selected ? "border-blue-500 shadow-md scale-105 transition-transform" : "border-gray-200"
+            "min-w-[250px] rounded-lg border-2 shadow-sm flex flex-col overflow-hidden transition-colors",
+            selected ? "border-blue-500 shadow-md scale-105 transition-transform" : "border-gray-200 dark:border-slate-700"
         )}
-            style={{ backgroundColor: data.color || cardBgColor }}
+            style={{ backgroundColor: activeBg }}
         >
             {/* Header */}
-            <div className="bg-gray-100 p-2 border-b border-gray-200 flex items-center justify-between font-bold text-gray-700 drag-handle">
+            <div className="bg-gray-100 dark:bg-slate-900/50 p-2 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between font-bold text-gray-700 dark:text-gray-200 drag-handle">
                 <div className="flex items-center gap-2">
                     <GripHorizontal size={14} className="text-gray-400" />
                     <span>{data.name}</span>
@@ -26,7 +29,7 @@ const TableNode = ({ data, selected }) => {
             {/* Columns */}
             <div className="p-2 flex flex-col gap-1">
                 {data.columns.map((col, idx) => (
-                    <div key={idx} className="flex items-center justify-between text-sm py-1 border-b border-gray-50 last:border-0 relative group">
+                    <div key={idx} className="flex items-center justify-between text-sm py-1 border-b border-gray-50 dark:border-slate-700/50 last:border-0 relative group">
                         {/* Left Handle (Target) */}
                         <Handle
                             type="target"
@@ -42,7 +45,7 @@ const TableNode = ({ data, selected }) => {
                             {!col.pk && !col.fk && <Type size={14} className="text-gray-400" />}
                             <span className={clsx(
                                 "font-medium",
-                                col.pk ? "text-gray-900" : "text-gray-600"
+                                col.pk ? "text-gray-900 dark:text-gray-100" : "text-gray-600 dark:text-gray-300"
                             )}>{col.name}</span>
                         </div>
 

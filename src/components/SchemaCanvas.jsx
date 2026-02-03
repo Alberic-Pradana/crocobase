@@ -13,9 +13,11 @@ import 'reactflow/dist/style.css';
 import useSchemaStore from '../store/useSchemaStore';
 import TableNode from './TableNode';
 import TableEditor from './TableEditor';
-import { Download, Upload, Plus, Trash2, Settings } from 'lucide-react';
+import { Download, Upload, Plus, Trash2, Settings, Moon, Sun } from 'lucide-react';
 import { parseSQL } from '../utils/sqlParser';
 import { generateSQL, downloadFile } from '../utils/sqlExporter';
+
+import { CARD_COLORS, LINE_COLORS } from '../utils/theme';
 
 const nodeTypes = {
     tableNode: TableNode,
@@ -25,23 +27,6 @@ const SchemaCanvas = () => {
     const { nodes, edges, onNodesChange, onEdgesChange, setSchema, addTable, visualizationSettings, updateVisualizationSetting } = useSchemaStore();
     const [editingTableId, setEditingTableId] = useState(null);
     const [showSettings, setShowSettings] = useState(false);
-
-    const LINE_COLORS = [
-        { name: 'Slate', value: '#64748b' },
-        { name: 'Blue', value: '#3b82f6' },
-        { name: 'Emerald', value: '#10b981' },
-        { name: 'Amber', value: '#f59e0b' },
-        { name: 'Rose', value: '#f43f5e' },
-    ];
-
-    const CARD_COLORS = [
-        { name: 'White', value: '#ffffff' },
-        { name: 'Gray', value: '#f9fafb' }, // gray-50
-        { name: 'Blue', value: '#eff6ff' }, // blue-50
-        { name: 'Green', value: '#f0fdf4' }, // green-50
-        { name: 'Yellow', value: '#fefce8' }, // yellow-50
-        { name: 'Red', value: '#fef2f2' }, // red-50
-    ];
 
     const onConnect = useCallback((params) => console.log('Connect', params), []);
     const onNodeClick = useCallback((event, node) => {
@@ -72,7 +57,7 @@ const SchemaCanvas = () => {
     };
 
     return (
-        <div className="h-full w-full bg-gray-50 relative">
+        <div className="h-full w-full bg-gray-50 dark:bg-slate-950 relative">
             <ReactFlow
                 nodes={nodes}
                 edges={edges}
@@ -84,18 +69,18 @@ const SchemaCanvas = () => {
                 fitView
                 minZoom={0.05}
             >
-                <Background color="#aaa" gap={16} />
+                <Background color={visualizationSettings.darkMode ? "#475569" : "#aaa"} gap={16} />
                 <Controls />
-                <MiniMap nodeColor={() => '#e2e8f0'} />
+                <MiniMap nodeColor={() => visualizationSettings.darkMode ? '#334155' : '#e2e8f0'} style={visualizationSettings.darkMode ? { backgroundColor: '#1e293b' } : {}} />
 
                 <Panel position="top-right" className="flex flex-col gap-2 items-end">
                     <div className="flex gap-2">
-                        <label className="bg-white p-2 rounded shadow border border-gray-200 cursor-pointer hover:bg-gray-50 flex items-center gap-2">
+                        <label className="bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-gray-200 p-2 rounded shadow border border-gray-200 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700 flex items-center gap-2">
                             <Upload size={16} />
                             <span className="text-sm font-medium">Import SQL</span>
                             <input type="file" accept=".sql" className="hidden" onChange={handleFileUpload} />
                         </label>
-                        <button className="bg-white text-gray-700 p-2 rounded shadow border border-gray-200 hover:bg-gray-50 flex items-center gap-2 transition-colors" onClick={() => setShowSettings(!showSettings)}>
+                        <button className="bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-gray-200 text-gray-700 p-2 rounded shadow border border-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700 flex items-center gap-2 transition-colors" onClick={() => setShowSettings(!showSettings)}>
                             <Settings size={16} />
                             <span className="text-sm font-medium">Settings</span>
                         </button>
@@ -110,9 +95,22 @@ const SchemaCanvas = () => {
                     </div>
 
                     {showSettings && (
-                        <div className="bg-white p-4 rounded shadow-lg border border-gray-200 w-72 flex flex-col gap-4">
+                        <div className="bg-white dark:bg-slate-900 dark:border-slate-700 p-4 rounded shadow-lg border border-gray-200 w-72 flex flex-col gap-4">
+                            {/* Dark Mode Toggle */}
+                            <div className="flex items-center justify-between">
+                                <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">Dark Mode</label>
+                                <button
+                                    onClick={() => updateVisualizationSetting('darkMode', !visualizationSettings.darkMode)}
+                                    className={`p-1 rounded-full ${visualizationSettings.darkMode ? 'bg-slate-700 text-yellow-400' : 'bg-gray-200 text-gray-500'}`}
+                                >
+                                    {visualizationSettings.darkMode ? <Moon size={18} /> : <Sun size={18} />}
+                                </button>
+                            </div>
+
+                            <hr className="dark:border-slate-700" />
+
                             <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase block mb-2">Line Thickness ({visualizationSettings.edgeWidth}px)</label>
+                                <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase block mb-2">Line Thickness ({visualizationSettings.edgeWidth}px)</label>
                                 <input
                                     type="range"
                                     min="1"
@@ -124,7 +122,7 @@ const SchemaCanvas = () => {
                             </div>
 
                             <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase block mb-2">Line Color</label>
+                                <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase block mb-2">Line Color</label>
                                 <div className="flex gap-2 flex-wrap">
                                     {LINE_COLORS.map((color) => (
                                         <button
@@ -139,17 +137,20 @@ const SchemaCanvas = () => {
                             </div>
 
                             <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase block mb-2">Card Background</label>
+                                <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase block mb-2">Card Background</label>
                                 <div className="flex gap-2 flex-wrap">
-                                    {CARD_COLORS.map((color) => (
-                                        <button
-                                            key={color.name}
-                                            className={`w-6 h-6 rounded-full border border-gray-300 ${visualizationSettings.cardBgColor === color.value ? 'ring-2 ring-offset-1 ring-blue-500' : ''}`}
-                                            style={{ backgroundColor: color.value }}
-                                            onClick={() => updateVisualizationSetting('cardBgColor', color.value)}
-                                            title={color.name}
-                                        />
-                                    ))}
+                                    {Object.entries(CARD_COLORS).map(([key, theme]) => {
+                                        const activeVal = visualizationSettings.darkMode ? theme.dark : theme.light;
+                                        return (
+                                            <button
+                                                key={key}
+                                                className={`w-6 h-6 rounded-full border border-gray-300 ${visualizationSettings.cardBgColor === key ? 'ring-2 ring-offset-1 ring-blue-500' : ''}`}
+                                                style={{ backgroundColor: activeVal }}
+                                                onClick={() => updateVisualizationSetting('cardBgColor', key)}
+                                                title={key}
+                                            />
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>
