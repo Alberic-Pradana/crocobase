@@ -63,7 +63,9 @@ const useSchemaStore = create(persist((set, get) => ({
         edgeColor: '#b1b1b7',
         edgeWidth: 2,
         cardBgColor: 'White',
-        darkMode: false
+        darkMode: false,
+        showAllRelationships: true,
+        selectedRelationshipColumns: []
     },
 
     updateVisualizationSetting: (key, value) => {

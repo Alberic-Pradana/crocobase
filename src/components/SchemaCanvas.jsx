@@ -13,7 +13,7 @@ import 'reactflow/dist/style.css';
 import useSchemaStore from '../store/useSchemaStore';
 import TableNode from './TableNode';
 import TableEditor from './TableEditor';
-import { Download, Upload, Plus, Trash2, Settings, Moon, Sun } from 'lucide-react';
+import { Download, Upload, Plus, Trash2, Settings, Moon, Sun, Filter } from 'lucide-react';
 import { parseSQL } from '../utils/sqlParser';
 import { generateSQL, downloadFile } from '../utils/sqlExporter';
 
@@ -27,6 +27,44 @@ const SchemaCanvas = () => {
     const { nodes, edges, onNodesChange, onEdgesChange, setSchema, addTable, visualizationSettings, updateVisualizationSetting } = useSchemaStore();
     const [editingTableId, setEditingTableId] = useState(null);
     const [showSettings, setShowSettings] = useState(false);
+
+    // Calculate unique relationship columns for the filter list
+    const relationshipColumns = useMemo(() => {
+        const cols = new Set();
+        edges.forEach(edge => {
+            if (edge.sourceHandle) {
+                const col = edge.sourceHandle.replace(/-source$/, '');
+                cols.add(col);
+            }
+        });
+        return Array.from(cols).sort();
+    }, [edges]);
+
+    // Filter edges based on settings
+    const filteredEdges = useMemo(() => {
+        // Default to true if undefined (legacy state)
+        if (visualizationSettings.showAllRelationships !== false) {
+            return edges;
+        }
+        return edges.filter(edge => {
+            // Check if the source column is selected
+            if (!edge.sourceHandle) return false;
+            const col = edge.sourceHandle.replace(/-source$/, '');
+            return (visualizationSettings.selectedRelationshipColumns || []).includes(col);
+        });
+    }, [edges, visualizationSettings.showAllRelationships, visualizationSettings.selectedRelationshipColumns]);
+
+    const toggleRelationshipColumn = (col) => {
+        const current = visualizationSettings.selectedRelationshipColumns || [];
+        const isSelected = current.includes(col);
+        let newSelection;
+        if (isSelected) {
+            newSelection = current.filter(c => c !== col);
+        } else {
+            newSelection = [...current, col];
+        }
+        updateVisualizationSetting('selectedRelationshipColumns', newSelection);
+    };
 
     const onConnect = useCallback((params) => console.log('Connect', params), []);
     const onNodeClick = useCallback((event, node) => {
@@ -60,7 +98,7 @@ const SchemaCanvas = () => {
         <div className="h-full w-full bg-gray-50 dark:bg-slate-950 relative">
             <ReactFlow
                 nodes={nodes}
-                edges={edges}
+                edges={filteredEdges}
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
@@ -153,18 +191,60 @@ const SchemaCanvas = () => {
                                     })}
                                 </div>
                             </div>
+
+
+                            <hr className="dark:border-slate-700" />
+
+                            <div className="flex flex-col gap-2">
+                                <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase flex items-center justify-between">
+                                    <span>Relationships</span>
+                                    <Filter size={12} />
+                                </label>
+
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={visualizationSettings.showAllRelationships !== false}
+                                        onChange={(e) => updateVisualizationSetting('showAllRelationships', e.target.checked)}
+                                        className="rounded text-blue-600 focus:ring-blue-500"
+                                    />
+                                    <span className="text-sm dark:text-gray-300">Show All</span>
+                                </label>
+
+                                {visualizationSettings.showAllRelationships === false && (
+                                    <div className="max-h-40 overflow-y-auto border border-gray-200 dark:border-slate-700 rounded p-2 bg-gray-50 dark:bg-slate-800">
+                                        {relationshipColumns.length === 0 ? (
+                                            <p className="text-xs text-gray-400 italic">No relationships found</p>
+                                        ) : (
+                                            relationshipColumns.map(col => (
+                                                <label key={col} className="flex items-center gap-2 mb-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700 p-1 rounded">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={(visualizationSettings.selectedRelationshipColumns || []).includes(col)}
+                                                        onChange={() => toggleRelationshipColumn(col)}
+                                                        className="rounded text-blue-600 focus:ring-blue-500 w-3 h-3"
+                                                    />
+                                                    <span className="text-xs dark:text-gray-300 truncate" title={col}>{col}</span>
+                                                </label>
+                                            ))
+                                        )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
                 </Panel>
             </ReactFlow>
 
-            {editingTableId && (
-                <TableEditor
-                    tableId={editingTableId}
-                    onClose={() => setEditingTableId(null)}
-                />
-            )}
-        </div>
+            {
+                editingTableId && (
+                    <TableEditor
+                        tableId={editingTableId}
+                        onClose={() => setEditingTableId(null)}
+                    />
+                )
+            }
+        </div >
     );
 };
 
